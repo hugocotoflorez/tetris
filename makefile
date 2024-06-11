@@ -1,5 +1,5 @@
 # OBJS specifies which files to compile as part of the project
-OBJS = ./tetris.c
+OBJS = ./tetris.c ./main.c ./keyboard.c
 
 #CC specifies which compiler we're using
 CC = gcc
@@ -9,7 +9,7 @@ CC = gcc
 COMPILER_FLAGS = -Wall
 
 #LINKER_FLAGS specifies the libraries we're linking against
-LINKER_FLAGS =
+LINKER_FLAGS = -lpthread
 
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = main
@@ -18,6 +18,8 @@ OBJ_NAME = main
 all : $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 
+debug: $(OBJS)
+	$(CC) -g $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 
 clean:
 	rm $(OBJ_NAME)
