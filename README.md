@@ -25,8 +25,12 @@ edit binds by using the bind function.
 
 Bindable functions are listed in tetris.h behind the comment // bindable functions
 
-### how to exit
+### How to exit
 
 It is not implemented yet, but pressing Esc and Ctrl-C will terminate the program.
 Wait a second after pressing C-c to make sure cocked mode is restored (A white rectangle
 would be placed in the middle of the falling piece).
+
+### Know error
+
+Rotation dont check for collision. (fix will come soon!)
