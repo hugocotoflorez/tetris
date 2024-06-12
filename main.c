@@ -13,5 +13,6 @@ int main(int argc, char** argv)
     init_keyboard_handler(keybinds);
     loop_init();
     delete_keybinds(keybinds);
+    terminate_keyboard_handler();
     return 0;
 }

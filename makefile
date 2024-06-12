@@ -12,7 +12,7 @@ COMPILER_FLAGS = -Wall
 LINKER_FLAGS = -lpthread
 
 #OBJ_NAME specifies the name of our exectuable
-OBJ_NAME = main
+OBJ_NAME = tty-tetris
 
 #This is the target that compiles our executable
 all : $(OBJS)

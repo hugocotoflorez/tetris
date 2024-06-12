@@ -11,6 +11,7 @@
 
 #include <pthread.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,18 +82,19 @@ struct termios origin_termios;
 void disableRawMode()
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &origin_termios);
+    printf("\e[?25h"); // show hiden cursor
 }
 
 void enableRawMode()
 {
+    printf("\e[?25l"); // hide cursor
     tcgetattr(STDIN_FILENO, &origin_termios);
-    atexit(disableRawMode);
     struct termios raw;
     raw.c_lflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     raw.c_lflag &= ~(OPOST);
     raw.c_lflag |= (CS8);
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
-    // raw.c_cc[VTIME] = 1;
+    raw.c_cc[VTIME] = 1;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
@@ -157,6 +159,8 @@ void bind(Keybinds* keybinds, char key, func f)
 }
 
 bool IS_HANDLER_ACTIVE = false;
+uint8_t KILLALL        = 0;
+pthread_t thread_id;
 
 
 void* __keyboard_handler(void* keybinds)
@@ -165,8 +169,7 @@ void* __keyboard_handler(void* keybinds)
     ssize_t o;
     enableRawMode();
     set_binds_active(*(Keybinds*)keybinds);
-    //printf("In handler");
-    while ((o = read(STDIN_FILENO, &c, 1)) >= 0 && c != EXIT_POINT)
+    while ((o = read(STDIN_FILENO, &c, 1)) >= 0 && c != EXIT_POINT && !KILLALL)
     {
         if (o == 0) // si no hay input
             mssleep(10);
@@ -176,20 +179,28 @@ void* __keyboard_handler(void* keybinds)
             c = 0; // avoid repetitive calls to last character
         }
     }
-    //printf("Exit handler");
-    disableRawMode();
     set_binds_inactive(*(Keybinds*)keybinds);
-    IS_HANDLER_ACTIVE = false;
+    disableRawMode();
     return NULL;
 }
 
 
 void init_keyboard_handler(Keybinds* keybinds)
 {
-    pthread_t thread_id;
     // dont allow running multiple instances of this function
     if (IS_HANDLER_ACTIVE)
         return;
     IS_HANDLER_ACTIVE = true;
     pthread_create(&thread_id, NULL, __keyboard_handler, keybinds);
+}
+
+void terminate_keyboard_handler()
+{
+    KILLALL = 1;
+    pthread_join(thread_id, NULL);
+    disableRawMode();
+    /*
+     * I think this is a duplicate call but
+     * without it it dont exit raw mode successfully
+     */
 }

@@ -64,6 +64,7 @@ void init_keybinds(Keybinds keybinds);
 void bind(Keybinds keybinds, char key, void f(void));
 void init_keyboard_handler(Keybinds);
 void delete_keybinds(Keybinds keybinds);
+void terminate_keyboard_handler();
 
 // Bindable functions (tetris.h)
 void move_down(void);

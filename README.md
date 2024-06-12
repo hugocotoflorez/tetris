@@ -27,4 +27,6 @@ Bindable functions are listed in tetris.h behind the comment // bindable functio
 
 ### how to exit
 
-It is not implemented yet, but pressing Esc and Ctrl-C will terminate the program
+It is not implemented yet, but pressing Esc and Ctrl-C will terminate the program.
+Wait a second after pressing C-c to make sure cocked mode is restored (A white rectangle
+would be placed in the middle of the falling piece).
