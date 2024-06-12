@@ -165,7 +165,7 @@ void* __keyboard_handler(void* keybinds)
     ssize_t o;
     enableRawMode();
     set_binds_active(*(Keybinds*)keybinds);
-    printf("In handler");
+    //printf("In handler");
     while ((o = read(STDIN_FILENO, &c, 1)) >= 0 && c != EXIT_POINT)
     {
         if (o == 0) // si no hay input
@@ -176,7 +176,7 @@ void* __keyboard_handler(void* keybinds)
             c = 0; // avoid repetitive calls to last character
         }
     }
-    printf("Exit handler");
+    //printf("Exit handler");
     disableRawMode();
     set_binds_inactive(*(Keybinds*)keybinds);
     IS_HANDLER_ACTIVE = false;

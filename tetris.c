@@ -1,4 +1,4 @@
-#include "tetris.h"
+#include "tetris-dev.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +43,7 @@ void term_show_cursor()
 }
 
 
-int init_board(enum SrandStatus srand_status)
+void init_board(enum SrandStatus srand_status)
 {
     BOARD = (Board){ .width = WIDTH,
         .height             = HEIGHT,
@@ -54,7 +54,6 @@ int init_board(enum SrandStatus srand_status)
         BOARD.board[i] = 0;
     if (srand_status)
         srand(time(NULL));
-    return 0;
 }
 
 
@@ -63,21 +62,21 @@ void init_graphics()
     term_clean();
     printf("\e[0m");
     term_moveto(BOARD.board_position);
-    for (int i = 0; i < BOARD.width + 2; i++)
-        putchar(' ');
+    for (int i = 0; i < BOARD.width + OFFSET; i++)
+        printf(BG_FORMAT);
     putchar('\n');
     for (int j = 0; j < BOARD.height; j++)
     {
-        putchar(FRAME_CHAR);
+        printf(FRAME_FORMAT);
         for (int i = 0; i < BOARD.width; i++)
         {
-            putchar(' '); // bg
+            printf(BG_FORMAT);
         }
-        putchar(FRAME_CHAR);
+        printf(FRAME_FORMAT);
         putchar('\n');
     }
-    for (int i = 0; i < BOARD.width + 2; i++)
-        putchar(FRAME_CHAR);
+    for (int i = 0; i < BOARD.width + OFFSET; i++)
+        printf(FRAME_FORMAT);
     putchar('\n');
 }
 
@@ -86,15 +85,17 @@ void print_board()
 {
     term_moveto(BOARD.board_position);
 
-    for (int j = 0; j < BOARD.height; j++)
+    for (int i = 0; i < BOARD.width; i++)
     {
-        for (int i = 0; i < BOARD.width; i++)
+        for (int j = 0; j < BOARD.height; j++)
         {
-            if (BOARD.board[i * BOARD.height + j])
+            term_moveto((Vec2d){ i + OFFSET, j + OFFSET });
+            if (BOARD.board[i * BOARD.width + j] != 0)
             {
-                term_moveto((Vec2d){ i + 1, j + 1 });
-                printf("\e[%dm%c", 30 + BOARD.board[i * BOARD.height + j], PIECE_CHAR);
+                printf("\e[%dm%c", BASE_COLOR + BOARD.board[i * BOARD.width + j], PIECE_CHAR);
             }
+            else
+            printf(BG_FORMAT);
         }
     }
     printf("\e[0m");
@@ -104,12 +105,12 @@ void print_board()
 void print_piece(Piece piece, Vec2d position, uint8_t color)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
-    printf("\e[%dm%c", 30 + color, PIECE_CHAR);
+    printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
         position.j + 1 + piece.relative_shape[k].j });
-        printf("\e[%dm%c", 30 + color, PIECE_CHAR);
+        printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     }
     printf("\e[0m");
@@ -118,12 +119,12 @@ void print_piece(Piece piece, Vec2d position, uint8_t color)
 void erase_piece(Piece piece, Vec2d position)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
-    putchar(' ');
+    printf(BG_FORMAT);
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
         position.j + 1 + piece.relative_shape[k].j });
-        putchar(' ');
+        printf(BG_FORMAT);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     }
     printf("\e[0m");
@@ -165,9 +166,9 @@ void assign_shape(Piece* piece)
 
 void show_next_piece(Piece piece)
 {
-    term_moveto((Vec2d){ 0, WIDTH + 4 });
+    term_moveto((Vec2d){ 0, WIDTH + OFFSET + 2 });
     printf("Next:");
-    print_piece(piece, (Vec2d){ 2, WIDTH + 4 }, 7);
+    print_piece(piece, (Vec2d){ 2, WIDTH + OFFSET + 2 }, 7);
 }
 
 uint8_t random_color()
@@ -239,13 +240,52 @@ void set_piece_on_board(Piece piece)
     }
 }
 
+
+void fix_topwards(int row)
+{
+    for (int i = row; i >= 1; i--)
+    {
+        for (int j = HEIGHT - 1; j >= 0; j--)
+        {
+            BOARD.board[i * WIDTH + j] = BOARD.board[(i - 1) * WIDTH + j];
+        }
+    }
+    for (int j = HEIGHT - 1; j >= 0; j--)
+    {
+        BOARD.board[j] = 0;
+    }
+    print_board();
+}
+
+void row_completion()
+{
+    uint8_t is_complete;
+    int i;
+    for (i = WIDTH - 1; i >= 0; i--)
+    {
+        is_complete = 1;
+        for (int j = HEIGHT - 1; j >= 0; j--)
+        {
+            if (BOARD.board[i * WIDTH + j] == 0)
+            {
+                is_complete = 0;
+                break;
+            }
+        }
+        if (is_complete)
+        {
+            fix_topwards(i);
+            ++i;
+        }
+    }
+}
+
 void loop_init()
 {
     Piece next_piece;
     Vec2d initial_position = (Vec2d){ 1, WIDTH / 2 }; // initial position
     term_hide_cursor();
     random_piece(&CURR_PIECE);
-    print_board(); // unnecesary?
     CURR_PIECE.position = initial_position;
     do
     {
@@ -259,12 +299,13 @@ void loop_init()
             sleep(1);
         }
         set_piece_on_board(CURR_PIECE);
-        erase_piece(next_piece, (Vec2d){ 2, WIDTH + 4 });
+        row_completion();
+        erase_piece(next_piece, (Vec2d){ 2, WIDTH + OFFSET + 2 });
         CURR_PIECE          = next_piece;
         CURR_PIECE.position = initial_position;
     } while (!collide(CURR_PIECE, __next_position(CURR_PIECE.position)));
     print_piece(CURR_PIECE, CURR_PIECE.position, 1);
-    term_moveto((Vec2d){ WIDTH + 3, HEIGHT + 2 });
+    term_moveto((Vec2d){ WIDTH + OFFSET + 1, HEIGHT + OFFSET });
     fflush(stdout);
     term_show_cursor();
 }
@@ -302,7 +343,7 @@ void move_right(void)
 
 void rotate(void)
 {
-    // fix collisions
+    // TODO: fix collisions
     uint8_t aux;
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     for (int k = 0; k < 3; k++)
