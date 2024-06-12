@@ -10,6 +10,7 @@ int main(int argc, char** argv)
     bind(keybinds, 'a', move_left);
     bind(keybinds, 's', move_down);
     bind(keybinds, 'd', move_right);
+    bind(keybinds, ' ', fast_place);
     init_keyboard_handler(keybinds);
     loop_init();
     delete_keybinds(keybinds);

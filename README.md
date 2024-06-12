@@ -15,6 +15,16 @@ make all
 - `a` : Move left
 - `s` : Move right
 - `d` : Move down
+- `space` : Move straight down
+
+
+### features
+
+- Point count
+- Random color pieces
+- Time speeds up when a piece is placed
+- Lightweight and portable
+- Customizable controls
 
 ### edit controls
 
@@ -31,6 +41,7 @@ It is not implemented yet, but pressing Esc and Ctrl-C will terminate the progra
 Wait a second after pressing C-c to make sure cocked mode is restored (A white rectangle
 would be placed in the middle of the falling piece).
 
-### Know error
+### Custom client
 
-Rotation dont check for collision. (fix will come soon!)
+You can use `tetris.h` to build your own tetris machine, just make sure to
+free and delete all stuff. Thanks for using it!

@@ -1,20 +1,16 @@
 #ifndef __TETRIS_DEV_H
 #define __TETRIS_DEV_H
 
+#include "tetris.h"
 #include <stdint.h>
 
 #define PIECE_CHAR ' '
 #define BASE_COLOR 40
 #define BG_FORMAT "\e[0m "
 #define FRAME_FORMAT "\e[47m "
-
+#define SPEED_UP_FALLING_PIECE 10
 #define OFFSET 2
-
-enum SrandStatus
-{
-    SRAND_DONT_INIT = 0,
-    SRAND_INIT,
-};
+#define POINTS_POSITION 6, WIDTH+OFFSET+2
 
 typedef struct
 {
@@ -54,22 +50,7 @@ typedef struct
 
 typedef void* Keybinds;
 
-// Tetris stuff (tetris.c)
-void init_board(enum SrandStatus srand_status);
-void init_graphics();
-void loop_init();
-
-// keyboard handler (keyboard.c)
-void init_keybinds(Keybinds keybinds);
-void bind(Keybinds keybinds, char key, void f(void));
-void init_keyboard_handler(Keybinds);
-void delete_keybinds(Keybinds keybinds);
-void terminate_keyboard_handler();
-
-// Bindable functions (tetris.h)
-void move_down(void);
-void move_right(void);
-void move_left(void);
-void rotate(void);
+// functions not declared in tetris.h
+void mssleep(int milliseconds);
 
 #endif // !__TETRIS_DEV_H

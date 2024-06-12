@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -10,6 +11,7 @@
 
 Piece CURR_PIECE;
 Board BOARD;
+unsigned long POINTS = 0;
 
 const struct Relative_shape relative_shapes = {
     .o = { { 1, 0 }, { 0, 1 }, { 1, 1 } },
@@ -95,7 +97,7 @@ void print_board()
                 printf("\e[%dm%c", BASE_COLOR + BOARD.board[i * BOARD.width + j], PIECE_CHAR);
             }
             else
-            printf(BG_FORMAT);
+                printf(BG_FORMAT);
         }
     }
     printf("\e[0m");
@@ -223,6 +225,39 @@ int collide(Piece piece, Vec2d pos)
     return 0;
 }
 
+void print_points()
+{
+    term_moveto((Vec2d){ POINTS_POSITION });
+    printf("\e[0m\e[K"); // erase line from cursor
+    term_moveto((Vec2d){ POINTS_POSITION });
+    printf("Points: %lu\e[0m", POINTS);
+}
+
+
+void update_points(uint8_t lines)
+{
+    switch (lines)
+    {
+        case 1:
+            POINTS += 100;
+            break;
+        case 2:
+            POINTS += 250;
+            break;
+        case 3:
+            POINTS += 500;
+            break;
+        case 4:
+            POINTS += 1000;
+            break;
+        default:
+            puts("How did you do >4 lines?");
+            break;
+    }
+    print_points();
+}
+
+
 void piece_movedown(Piece* piece)
 {
     erase_piece(*piece, piece->position);
@@ -259,12 +294,12 @@ void fix_topwards(int row)
 
 void row_completion()
 {
-    uint8_t is_complete;
+    uint8_t is_complete, completed_rows = 0;
     int i;
-    for (i = WIDTH - 1; i >= 0; i--)
+    for (i = HEIGHT - 1; i >= 0; i--)
     {
         is_complete = 1;
-        for (int j = HEIGHT - 1; j >= 0; j--)
+        for (int j = WIDTH - 1; j >= 0; j--)
         {
             if (BOARD.board[i * WIDTH + j] == 0)
             {
@@ -276,16 +311,21 @@ void row_completion()
         {
             fix_topwards(i);
             ++i;
+            ++completed_rows;
         }
     }
+    if (completed_rows)
+        update_points(completed_rows);
 }
 
 void loop_init()
 {
     Piece next_piece;
-    Vec2d initial_position = (Vec2d){ 1, WIDTH / 2 }; // initial position
+    unsigned int sleep_time = 1000;
+    Vec2d initial_position  = (Vec2d){ 1, WIDTH / 2 }; // initial position
     term_hide_cursor();
     random_piece(&CURR_PIECE);
+    print_points();
     CURR_PIECE.position = initial_position;
     do
     {
@@ -296,9 +336,15 @@ void loop_init()
         {
             piece_movedown(&CURR_PIECE);
             fflush(stdout);
-            sleep(1);
+            mssleep(sleep_time);
         }
         set_piece_on_board(CURR_PIECE);
+        sleep_time -= SPEED_UP_FALLING_PIECE; // speed up falling time
+        if (sleep_time <= 0)
+        {
+            printf("Win");
+            break;
+        }
         row_completion();
         erase_piece(next_piece, (Vec2d){ 2, WIDTH + OFFSET + 2 });
         CURR_PIECE          = next_piece;
@@ -341,9 +387,44 @@ void move_right(void)
     fflush(stdout);
 }
 
+void fast_place(void)
+{
+    erase_piece(CURR_PIECE, CURR_PIECE.position);
+    do
+    {
+        ++CURR_PIECE.position.i;
+    } while (!collide(CURR_PIECE, CURR_PIECE.position));
+    --CURR_PIECE.position.i;
+    print_piece(CURR_PIECE, CURR_PIECE.position, CURR_PIECE.color);
+    fflush(stdout);
+}
+
+void rotate_ckockwise()
+{
+    uint8_t aux;
+    erase_piece(CURR_PIECE, CURR_PIECE.position);
+    for (int k = 0; k < 3; k++)
+    {
+        aux                            = CURR_PIECE.relative_shape[k].j;
+        CURR_PIECE.relative_shape[k].j = CURR_PIECE.relative_shape[k].i;
+        CURR_PIECE.relative_shape[k].i = -aux;
+    }
+    if (collide(CURR_PIECE, CURR_PIECE.position))
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            aux                            = CURR_PIECE.relative_shape[k].i;
+            CURR_PIECE.relative_shape[k].i = CURR_PIECE.relative_shape[k].j;
+            CURR_PIECE.relative_shape[k].j = -aux;
+        }
+    }
+    print_piece(CURR_PIECE, CURR_PIECE.position, CURR_PIECE.color);
+    fflush(stdout);
+}
+
+
 void rotate(void)
 {
-    // TODO: fix collisions
     uint8_t aux;
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     for (int k = 0; k < 3; k++)
@@ -351,6 +432,15 @@ void rotate(void)
         aux                            = CURR_PIECE.relative_shape[k].i;
         CURR_PIECE.relative_shape[k].i = CURR_PIECE.relative_shape[k].j;
         CURR_PIECE.relative_shape[k].j = -aux;
+    }
+    if (collide(CURR_PIECE, CURR_PIECE.position))
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            aux                            = CURR_PIECE.relative_shape[k].j;
+            CURR_PIECE.relative_shape[k].j = CURR_PIECE.relative_shape[k].i;
+            CURR_PIECE.relative_shape[k].i = -aux;
+        }
     }
     print_piece(CURR_PIECE, CURR_PIECE.position, CURR_PIECE.color);
     fflush(stdout);

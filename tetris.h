@@ -27,5 +27,6 @@ void move_down(void);
 void move_right(void);
 void move_left(void);
 void rotate(void);
+void fast_place(void);
 
 #endif // !__TETRIS_H
