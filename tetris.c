@@ -6,9 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define WIDTH 16
-#define HEIGHT 16
-
+// globs
 Piece CURR_PIECE;
 Board BOARD;
 unsigned long POINTS = 0;
@@ -45,14 +43,19 @@ void term_show_cursor()
 }
 
 
-void init_board(enum SrandStatus srand_status)
+void init_board(int width, int height, enum SrandStatus srand_status)
 {
-    BOARD = (Board){ .width = WIDTH,
-        .height             = HEIGHT,
-        .board              = malloc(WIDTH * HEIGHT * sizeof(uint8_t)),
-        .board_position     = (Vec2d){ 0, 0 } };
+    if (height < 5 || width < 5)
+    {
+        height = 16;
+        width  = 16;
+    }
+    BOARD = (Board){ .width = width,
+        .height             = height,
+        .board              = malloc(width * height * sizeof(uint8_t)),
+        .board_position     = (Vec2d){ 0, 0 } }; // todo: change position
 
-    for (int i = 0; i < WIDTH * HEIGHT; i++)
+    for (int i = 0; i < BOARD.width * BOARD.height; i++)
         BOARD.board[i] = 0;
     if (srand_status)
         srand(time(NULL));
@@ -64,8 +67,10 @@ void init_graphics()
     term_clean();
     printf("\e[0m");
     term_moveto(BOARD.board_position);
-    for (int i = 0; i < BOARD.width + OFFSET; i++)
+    printf(FRAME_FORMAT);
+    for (int i = 1; i < BOARD.width - 1 + OFFSET; i++)
         printf(BG_FORMAT);
+    printf(FRAME_FORMAT);
     putchar('\n');
     for (int j = 0; j < BOARD.height; j++)
     {
@@ -87,9 +92,9 @@ void print_board()
 {
     term_moveto(BOARD.board_position);
 
-    for (int i = 0; i < BOARD.width; i++)
+    for (int i = 0; i < BOARD.height; i++)
     {
-        for (int j = 0; j < BOARD.height; j++)
+        for (int j = 0; j < BOARD.width; j++)
         {
             term_moveto((Vec2d){ i + OFFSET, j + OFFSET });
             if (BOARD.board[i * BOARD.width + j] != 0)
@@ -168,9 +173,9 @@ void assign_shape(Piece* piece)
 
 void show_next_piece(Piece piece)
 {
-    term_moveto((Vec2d){ 0, WIDTH + OFFSET + 2 });
+    term_moveto((Vec2d){ 0, BOARD.width + OFFSET + 2 });
     printf("Next:");
-    print_piece(piece, (Vec2d){ 2, WIDTH + OFFSET + 2 }, 7);
+    print_piece(piece, (Vec2d){ 2, BOARD.width + OFFSET + 2 }, 7);
 }
 
 uint8_t random_color()
@@ -192,13 +197,13 @@ int __check_collision(Vec2d position)
     --position.j;
     if (position.j < 0)
         return -1; // side collision
-    if (position.j >= WIDTH)
+    if (position.j >= BOARD.width)
         return -1; // side collision
     if (position.i < 0)
         return 1;
-    if (position.i >= HEIGHT)
+    if (position.i >= BOARD.height)
         return 1;
-    if (BOARD.board[position.i * WIDTH + position.j])
+    if (BOARD.board[position.i * BOARD.width + position.j])
         return 2;
     return 0;
 }
@@ -267,10 +272,10 @@ void piece_movedown(Piece* piece)
 
 void set_piece_on_board(Piece piece)
 {
-    BOARD.board[(--piece.position.i) * WIDTH + --piece.position.j] = piece.color;
+    BOARD.board[(--piece.position.i) * BOARD.width + --piece.position.j] = piece.color;
     for (int k = 0; k < 3; k++)
     {
-        BOARD.board[(piece.position.i + piece.relative_shape[k].i) * WIDTH +
+        BOARD.board[(piece.position.i + piece.relative_shape[k].i) * BOARD.width +
         piece.position.j + piece.relative_shape[k].j] = piece.color;
     }
 }
@@ -280,12 +285,12 @@ void fix_topwards(int row)
 {
     for (int i = row; i >= 1; i--)
     {
-        for (int j = HEIGHT - 1; j >= 0; j--)
+        for (int j = BOARD.width - 1; j >= 0; j--)
         {
-            BOARD.board[i * WIDTH + j] = BOARD.board[(i - 1) * WIDTH + j];
+            BOARD.board[i * BOARD.width + j] = BOARD.board[(i - 1) * BOARD.width + j];
         }
     }
-    for (int j = HEIGHT - 1; j >= 0; j--)
+    for (int j = BOARD.width - 1; j >= 0; j--)
     {
         BOARD.board[j] = 0;
     }
@@ -296,12 +301,12 @@ void row_completion()
 {
     uint8_t is_complete, completed_rows = 0;
     int i;
-    for (i = HEIGHT - 1; i >= 0; i--)
+    for (i = BOARD.height - 1; i >= 0; i--)
     {
         is_complete = 1;
-        for (int j = WIDTH - 1; j >= 0; j--)
+        for (int j = BOARD.width - 1; j >= 0; j--)
         {
-            if (BOARD.board[i * WIDTH + j] == 0)
+            if (BOARD.board[i * BOARD.width + j] == 0)
             {
                 is_complete = 0;
                 break;
@@ -322,7 +327,7 @@ void loop_init()
 {
     Piece next_piece;
     unsigned int sleep_time = 1000;
-    Vec2d initial_position  = (Vec2d){ 1, WIDTH / 2 }; // initial position
+    Vec2d initial_position  = (Vec2d){ 1, BOARD.width / 2 }; // initial position
     term_hide_cursor();
     random_piece(&CURR_PIECE);
     print_points();
@@ -346,12 +351,12 @@ void loop_init()
             break;
         }
         row_completion();
-        erase_piece(next_piece, (Vec2d){ 2, WIDTH + OFFSET + 2 });
+        erase_piece(next_piece, (Vec2d){ 2, BOARD.width + OFFSET + 2 });
         CURR_PIECE          = next_piece;
         CURR_PIECE.position = initial_position;
     } while (!collide(CURR_PIECE, __next_position(CURR_PIECE.position)));
     print_piece(CURR_PIECE, CURR_PIECE.position, 1);
-    term_moveto((Vec2d){ WIDTH + OFFSET + 1, HEIGHT + OFFSET });
+    term_moveto((Vec2d){ BOARD.width + OFFSET + 1, BOARD.height + OFFSET });
     fflush(stdout);
     term_show_cursor();
 }

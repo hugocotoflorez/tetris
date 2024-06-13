@@ -11,7 +11,7 @@ enum SrandStatus
 typedef void* Keybinds;
 
 // Tetris stuff (tetris.c)
-void init_board(enum SrandStatus srand_status);
+void init_board(int width, int height, enum SrandStatus srand_status);
 void init_graphics();
 void loop_init();
 

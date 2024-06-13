@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
     Keybinds keybinds;
-    init_board(SRAND_INIT);
+    init_board(16, 16, SRAND_INIT);
     init_graphics();
     init_keybinds(&keybinds);
     bind(keybinds, 'w', rotate);

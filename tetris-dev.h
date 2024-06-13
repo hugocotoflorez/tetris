@@ -8,9 +8,9 @@
 #define BASE_COLOR 40
 #define BG_FORMAT "\e[0m "
 #define FRAME_FORMAT "\e[47m "
-#define SPEED_UP_FALLING_PIECE 10
+#define SPEED_UP_FALLING_PIECE 7
 #define OFFSET 2
-#define POINTS_POSITION 6, WIDTH+OFFSET+2
+#define POINTS_POSITION 6, BOARD.width + OFFSET + 2
 
 typedef struct
 {
