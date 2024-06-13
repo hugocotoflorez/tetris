@@ -11,7 +11,7 @@ make install
 tty-tetris
 ```
 It copies the compiled binary to /usr/local/bin/, dont forget to change
-the keybinds before installation. For uninstall it you can run `make uninstall`.
+the keybinds before installation. For uninstall it you can run `sudo make uninstall`.
 
 #### Manual installation
 
@@ -36,6 +36,7 @@ make all
 - Time speeds up when a piece is placed
 - Lightweight and portable
 - Customizable controls
+- Customizable board size
 
 ### Edit controls
 
