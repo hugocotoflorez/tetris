@@ -15,11 +15,23 @@ LINKER_FLAGS = -lpthread
 OBJ_NAME = tty-tetris
 
 #This is the target that compiles our executable
-all : $(OBJS)
+all: $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
 
 debug: $(OBJS)
 	$(CC) -g $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
+
+compile: ./tetris.c ./keyboard.c
+	$(CC) -c ./tetris.c ./keyboard.c $(COMPILER_FLAGS) $(LINKER_FLAGS)
+	ar rcs $(LIBNAME) *.o
+	rm *.o
+
+install: all
+	install tty-tetris /usr/local/bin
+
+uninstall:
+	rm /usr/local/bin/tty-tetris
+
 
 clean:
 	rm $(OBJ_NAME)
