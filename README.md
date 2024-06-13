@@ -2,6 +2,8 @@
 
 ## Play tetris from tty! (or any terminal emulator)
 
+<img src="https://raw.githubusercontent.com/hugocotoflorez/tetris/main/image.png" align="center" alt="Hugo Coto header image">
+
 ### How to install
 
 ``` sh
