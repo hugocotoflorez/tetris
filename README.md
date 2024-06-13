@@ -6,6 +6,15 @@
 
 ### How to install
 
+#### Cloning the repo
+
+``` sh
+git clone https://github.com/hugocotoflorez/tetris
+cd tetris
+```
+
+#### Fast install
+
 ``` sh
 make install
 tty-tetris
