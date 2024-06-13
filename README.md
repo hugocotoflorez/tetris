@@ -6,14 +6,14 @@
 
 ### How to install
 
-#### Cloning the repo
+#### Clone the repo
 
 ``` sh
 git clone https://github.com/hugocotoflorez/tetris
 cd tetris
 ```
 
-#### Fast install
+#### Fast installation
 
 ``` sh
 make install
