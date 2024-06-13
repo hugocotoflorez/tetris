@@ -14,6 +14,8 @@ LINKER_FLAGS = -lpthread
 #OBJ_NAME specifies the name of our exectuable
 OBJ_NAME = tty-tetris
 
+LIBNAME = libttytetris.a
+
 #This is the target that compiles our executable
 all: $(OBJS)
 	$(CC) $(OBJS) $(COMPILER_FLAGS) $(LINKER_FLAGS) -o $(OBJ_NAME)
@@ -35,5 +37,8 @@ uninstall:
 
 clean:
 	rm $(OBJ_NAME)
+
+cleanall:
+	rm $(OBJ_NAME) $(LIBNAME)
 
 

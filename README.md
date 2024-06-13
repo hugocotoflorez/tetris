@@ -2,14 +2,23 @@
 
 ## Play tetris from tty! (or any terminal emulator)
 
-### How to compile
+### How to install
+
+``` sh
+make install
+tty-tetris
+```
+It copies the compiled binary to /usr/local/bin/, dont forget to change
+the keybinds before installation. For uninstall it you can run `make uninstall`.
+
+#### Manual installation
 
 ``` sh
 make all
 ./tty-tetris
 ```
 
-### default binds
+### Default binds
 
 - `w` : Rotate
 - `a` : Move left
@@ -18,7 +27,7 @@ make all
 - `space` : Move straight down
 
 
-### features
+### Features
 
 - Point count
 - Random color pieces
@@ -26,7 +35,7 @@ make all
 - Lightweight and portable
 - Customizable controls
 
-### edit controls
+### Edit controls
 
 You can edit the binds before compilation! Just edit main.c and
 edit binds by using the bind function.
@@ -44,4 +53,7 @@ would be placed in the middle of the falling piece).
 ### Custom client
 
 You can use `tetris.h` to build your own tetris machine, just make sure to
-free and delete all stuff. Thanks for using it!
+free and delete all stuff.
+
+Fast compilation: `make compile` to get the library, and then
+`gcc <your script>.c -L. -lttytetris -lpthread`, dont forget to include pthread lib!
