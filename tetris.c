@@ -24,7 +24,7 @@ const struct Relative_shape relative_shapes = {
 
 void term_moveto(Vec2d position)
 {
-    printf("\e[%d;%dH", position.i, position.j);
+    printf("\e[%d;%dH", position.i, position.j * 2 - 1);
 }
 
 void term_clean()
@@ -47,8 +47,8 @@ void init_board(int width, int height, enum SrandStatus srand_status)
 {
     if (height < 5 || width < 5)
     {
-        height = 16;
-        width  = 16;
+        height = 20;
+        width  = 10;
     }
     BOARD = (Board){ .width = width,
         .height             = height,
@@ -68,22 +68,33 @@ void init_graphics()
     printf("\e[0m");
     term_moveto(BOARD.board_position);
     printf(FRAME_FORMAT);
+    printf(FRAME_FORMAT);
     for (int i = 1; i < BOARD.width - 1 + OFFSET; i++)
+    {
         printf(BG_FORMAT);
+        printf(BG_FORMAT);
+    }
+    printf(FRAME_FORMAT);
     printf(FRAME_FORMAT);
     putchar('\n');
     for (int j = 0; j < BOARD.height; j++)
     {
         printf(FRAME_FORMAT);
+        printf(FRAME_FORMAT);
         for (int i = 0; i < BOARD.width; i++)
         {
             printf(BG_FORMAT);
+            printf(BG_FORMAT);
         }
+        printf(FRAME_FORMAT);
         printf(FRAME_FORMAT);
         putchar('\n');
     }
     for (int i = 0; i < BOARD.width + OFFSET; i++)
+    {
         printf(FRAME_FORMAT);
+        printf(FRAME_FORMAT);
+    }
     putchar('\n');
 }
 
@@ -100,9 +111,13 @@ void print_board()
             if (BOARD.board[i * BOARD.width + j] != 0)
             {
                 printf("\e[%dm%c", BASE_COLOR + BOARD.board[i * BOARD.width + j], PIECE_CHAR);
+                printf("\e[%dm%c", BASE_COLOR + BOARD.board[i * BOARD.width + j], PIECE_CHAR);
             }
             else
+            {
                 printf(BG_FORMAT);
+                printf(BG_FORMAT);
+            }
         }
     }
     printf("\e[0m");
@@ -113,10 +128,12 @@ void print_piece(Piece piece, Vec2d position, uint8_t color)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
+    printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
         position.j + 1 + piece.relative_shape[k].j });
+        printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
         printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     }
@@ -127,10 +144,12 @@ void erase_piece(Piece piece, Vec2d position)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     printf(BG_FORMAT);
+    printf(BG_FORMAT);
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
         position.j + 1 + piece.relative_shape[k].j });
+        printf(BG_FORMAT);
         printf(BG_FORMAT);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     }
