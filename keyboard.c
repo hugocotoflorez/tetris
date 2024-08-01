@@ -34,13 +34,14 @@ typedef struct __bind
 typedef struct __keybinds
 {
     bool (*key_exists)(struct __keybinds, char);
-    void (*add)(struct __keybinds*, char, func);
-    Bind* binds;
-    int binds_n;
+    void (*add)(struct __keybinds *, char, func);
+    Bind *binds;
+    int   binds_n;
 } Keybinds;
 
 
-bool key_exists(Keybinds keybinds, char key)
+bool
+key_exists(Keybinds keybinds, char key)
 {
     for (int i = 0; i < keybinds.binds_n; i++)
         if (keybinds.binds[i].key == key)
@@ -49,15 +50,18 @@ bool key_exists(Keybinds keybinds, char key)
 }
 
 
-void add(Keybinds* keybinds, char key, func action)
+void
+add(Keybinds *keybinds, char key, func action)
 {
     // printf("Adding %c to %p\n", key, action);
-    keybinds->binds = realloc(keybinds->binds, (keybinds->binds_n + 1) * sizeof(Bind));
+    keybinds->binds =
+    realloc(keybinds->binds, (keybinds->binds_n + 1) * sizeof(Bind));
     keybinds->binds[keybinds->binds_n++] = (Bind){ .action = action, .key = key };
 }
 
 
-void delete_keybinds(Keybinds* keybinds)
+void
+delete_keybinds(Keybinds *keybinds)
 {
     free(keybinds->binds);
     keybinds->binds   = NULL;
@@ -66,7 +70,8 @@ void delete_keybinds(Keybinds* keybinds)
 }
 
 
-void init_keybinds(Keybinds** keybinds)
+void
+init_keybinds(Keybinds **keybinds)
 {
     *keybinds  = malloc(sizeof(Keybinds));
     **keybinds = (Keybinds){
@@ -79,13 +84,15 @@ void init_keybinds(Keybinds** keybinds)
 
 struct termios origin_termios;
 
-void disableRawMode()
+void
+disableRawMode()
 {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &origin_termios);
     printf("\e[?25h"); // show hiden cursor
 }
 
-void enableRawMode()
+void
+enableRawMode()
 {
     printf("\e[?25l"); // hide cursor
     tcgetattr(STDIN_FILENO, &origin_termios);
@@ -99,7 +106,8 @@ void enableRawMode()
 }
 
 
-void mssleep(int milliseconds)
+void
+mssleep(int milliseconds)
 {
     struct timespec t;
     struct timespec _t;
@@ -109,7 +117,8 @@ void mssleep(int milliseconds)
 }
 
 
-void execute_bind(Keybinds keybinds, char key)
+void
+execute_bind(Keybinds keybinds, char key)
 {
     // printf("In exec bind");
     for (int i = 0; i < keybinds.binds_n; i++)
@@ -125,13 +134,15 @@ void execute_bind(Keybinds keybinds, char key)
 }
 
 
-void set_binds_active(Keybinds keybinds)
+void
+set_binds_active(Keybinds keybinds)
 {
     for (int i = 0; i < keybinds.binds_n; i++)
         keybinds.binds[i].active = true;
 }
 
-void set_binds_inactive(Keybinds keybinds)
+void
+set_binds_inactive(Keybinds keybinds)
 {
     for (int i = 0; i < keybinds.binds_n; i++)
         keybinds.binds[i].active = false;
@@ -145,7 +156,8 @@ void set_binds_inactive(Keybinds keybinds)
  *
  * Isnt needed to unbind keys at exit
  */
-void bind(Keybinds* keybinds, char key, func f)
+void
+bind(Keybinds *keybinds, char key, func f)
 {
     for (int i = 0; i < keybinds->binds_n; i++)
         if (keybinds->binds[i].key == key)
@@ -158,34 +170,36 @@ void bind(Keybinds* keybinds, char key, func f)
     keybinds->add(keybinds, key, f);
 }
 
-bool IS_HANDLER_ACTIVE = false;
-uint8_t KILLALL        = 0;
+bool      IS_HANDLER_ACTIVE = false;
+uint8_t   KILLALL           = 0;
 pthread_t thread_id;
 
 
-void* __keyboard_handler(void* keybinds)
+void *
+__keyboard_handler(void *keybinds)
 {
-    char c = 0;
+    char    c = 0;
     ssize_t o;
     enableRawMode();
-    set_binds_active(*(Keybinds*)keybinds);
+    set_binds_active(*(Keybinds *) keybinds);
     while ((o = read(STDIN_FILENO, &c, 1)) >= 0 && c != EXIT_POINT && !KILLALL)
     {
         if (o == 0) // si no hay input
             mssleep(10);
         else
         {
-            execute_bind(*(Keybinds*)keybinds, c);
+            execute_bind(*(Keybinds *) keybinds, c);
             c = 0; // avoid repetitive calls to last character
         }
     }
-    set_binds_inactive(*(Keybinds*)keybinds);
+    set_binds_inactive(*(Keybinds *) keybinds);
     disableRawMode();
     return NULL;
 }
 
 
-void init_keyboard_handler(Keybinds* keybinds)
+void
+init_keyboard_handler(Keybinds *keybinds)
 {
     // dont allow running multiple instances of this function
     if (IS_HANDLER_ACTIVE)
@@ -194,7 +208,8 @@ void init_keyboard_handler(Keybinds* keybinds)
     pthread_create(&thread_id, NULL, __keyboard_handler, keybinds);
 }
 
-void terminate_keyboard_handler()
+void
+terminate_keyboard_handler()
 {
     KILLALL = 1;
     pthread_join(thread_id, NULL);

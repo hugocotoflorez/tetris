@@ -7,8 +7,8 @@
 #include <unistd.h>
 
 // globs
-Piece CURR_PIECE;
-Board BOARD;
+Piece         CURR_PIECE;
+Board         BOARD;
 unsigned long POINTS = 0;
 
 const struct Relative_shape relative_shapes = {
@@ -22,38 +22,43 @@ const struct Relative_shape relative_shapes = {
 };
 
 
-void term_moveto(Vec2d position)
+void
+term_moveto(Vec2d position)
 {
     printf("\e[%d;%dH", position.i, position.j * 2 - 1);
 }
 
-void term_clean()
+void
+term_clean()
 {
-    printf("\e[0m\e[H\e[J");
+    printf("\e[0m\e[H\e[2J");
 }
 
-void term_hide_cursor()
+void
+term_hide_cursor()
 {
     printf("\e[?25l");
 }
 
-void term_show_cursor()
+void
+term_show_cursor()
 {
     printf("\e[?25h");
 }
 
 
-void init_board(int width, int height, enum SrandStatus srand_status)
+void
+init_board(int width, int height, enum SrandStatus srand_status)
 {
     if (height < 5 || width < 5)
     {
         height = 20;
         width  = 10;
     }
-    BOARD = (Board){ .width = width,
-        .height             = height,
-        .board              = malloc(width * height * sizeof(uint8_t)),
-        .board_position     = (Vec2d){ 0, 0 } }; // todo: change position
+    BOARD = (Board){ .width  = width,
+                     .height = height,
+                     .board  = malloc(width * height * sizeof(uint8_t)),
+                     .board_position = (Vec2d){ 0, 0 } }; // todo: change position
 
     for (int i = 0; i < BOARD.width * BOARD.height; i++)
         BOARD.board[i] = 0;
@@ -62,7 +67,8 @@ void init_board(int width, int height, enum SrandStatus srand_status)
 }
 
 
-void init_graphics()
+void
+init_graphics()
 {
     term_clean();
     printf("\e[0m");
@@ -99,7 +105,8 @@ void init_graphics()
 }
 
 
-void print_board()
+void
+print_board()
 {
     term_moveto(BOARD.board_position);
 
@@ -124,7 +131,8 @@ void print_board()
 }
 
 
-void print_piece(Piece piece, Vec2d position, uint8_t color)
+void
+print_piece(Piece piece, Vec2d position, uint8_t color)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
@@ -132,7 +140,7 @@ void print_piece(Piece piece, Vec2d position, uint8_t color)
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
-        position.j + 1 + piece.relative_shape[k].j });
+                             position.j + 1 + piece.relative_shape[k].j });
         printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
         printf("\e[%dm%c", BASE_COLOR + color, PIECE_CHAR);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
@@ -140,7 +148,8 @@ void print_piece(Piece piece, Vec2d position, uint8_t color)
     printf("\e[0m");
 }
 
-void erase_piece(Piece piece, Vec2d position)
+void
+erase_piece(Piece piece, Vec2d position)
 {
     term_moveto((Vec2d){ position.i + 1, position.j + 1 });
     printf(BG_FORMAT);
@@ -148,7 +157,7 @@ void erase_piece(Piece piece, Vec2d position)
     for (int k = 0; k < 3; k++)
     {
         term_moveto((Vec2d){ position.i + 1 + piece.relative_shape[k].i,
-        position.j + 1 + piece.relative_shape[k].j });
+                             position.j + 1 + piece.relative_shape[k].j });
         printf(BG_FORMAT);
         printf(BG_FORMAT);
         term_moveto((Vec2d){ position.i + 1, position.j + 1 });
@@ -156,13 +165,15 @@ void erase_piece(Piece piece, Vec2d position)
     printf("\e[0m");
 }
 
-void __assign(Piece* piece, const Vec2d relshape[3])
+void
+__assign(Piece *piece, const Vec2d relshape[3])
 {
     for (int k = 0; k < 3; k++)
         piece->relative_shape[k] = relshape[k];
 }
 
-void assign_shape(Piece* piece)
+void
+assign_shape(Piece *piece)
 {
     switch (piece->shape)
     {
@@ -190,19 +201,22 @@ void assign_shape(Piece* piece)
     }
 }
 
-void show_next_piece(Piece piece)
+void
+show_next_piece(Piece piece)
 {
     term_moveto((Vec2d){ 0, BOARD.width + OFFSET + 2 });
     printf("Next:");
     print_piece(piece, (Vec2d){ 2, BOARD.width + OFFSET + 2 }, 7);
 }
 
-uint8_t random_color()
+uint8_t
+random_color()
 {
     return rand() % 6 + 1;
 }
 
-void random_piece(Piece* piece)
+void
+random_piece(Piece *piece)
 {
     piece->shape = rand() % 7; // asign enum by index
     piece->color = random_color();
@@ -210,7 +224,8 @@ void random_piece(Piece* piece)
 }
 
 
-int __check_collision(Vec2d position)
+int
+__check_collision(Vec2d position)
 {
     --position.i; // frame fix
     --position.j;
@@ -227,21 +242,23 @@ int __check_collision(Vec2d position)
     return 0;
 }
 
-Vec2d __next_position(Vec2d position)
+Vec2d
+__next_position(Vec2d position)
 {
     return (Vec2d){ position.i + 1, position.j };
 }
 
-int collide(Piece piece, Vec2d pos)
+int
+collide(Piece piece, Vec2d pos)
 {
     Vec2d node;
-    int c = __check_collision(pos);
+    int   c = __check_collision(pos);
     if (c)
         return c;
     for (int k = 0; k < 3; k++)
     {
         node = (Vec2d){ pos.i + piece.relative_shape[k].i,
-            pos.j + piece.relative_shape[k].j };
+                        pos.j + piece.relative_shape[k].j };
         c    = __check_collision(node);
         if (c)
             return c;
@@ -249,7 +266,8 @@ int collide(Piece piece, Vec2d pos)
     return 0;
 }
 
-void print_points()
+void
+print_points()
 {
     term_moveto((Vec2d){ POINTS_POSITION });
     printf("\e[0m\e[K"); // erase line from cursor
@@ -258,7 +276,8 @@ void print_points()
 }
 
 
-void update_points(uint8_t lines)
+void
+update_points(uint8_t lines)
 {
     switch (lines)
     {
@@ -282,31 +301,36 @@ void update_points(uint8_t lines)
 }
 
 
-void piece_movedown(Piece* piece)
+void
+piece_movedown(Piece *piece)
 {
     erase_piece(*piece, piece->position);
     piece->position = __next_position(piece->position);
     print_piece(*piece, piece->position, piece->color);
 }
 
-void set_piece_on_board(Piece piece)
+void
+set_piece_on_board(Piece piece)
 {
-    BOARD.board[(--piece.position.i) * BOARD.width + --piece.position.j] = piece.color;
+    BOARD.board[(--piece.position.i) * BOARD.width + --piece.position.j] =
+    piece.color;
     for (int k = 0; k < 3; k++)
     {
         BOARD.board[(piece.position.i + piece.relative_shape[k].i) * BOARD.width +
-        piece.position.j + piece.relative_shape[k].j] = piece.color;
+                    piece.position.j + piece.relative_shape[k].j] = piece.color;
     }
 }
 
 
-void fix_topwards(int row)
+void
+fix_topwards(int row)
 {
     for (int i = row; i >= 1; i--)
     {
         for (int j = BOARD.width - 1; j >= 0; j--)
         {
-            BOARD.board[i * BOARD.width + j] = BOARD.board[(i - 1) * BOARD.width + j];
+            BOARD.board[i * BOARD.width + j] =
+            BOARD.board[(i - 1) * BOARD.width + j];
         }
     }
     for (int j = BOARD.width - 1; j >= 0; j--)
@@ -316,10 +340,11 @@ void fix_topwards(int row)
     print_board();
 }
 
-void row_completion()
+void
+row_completion()
 {
     uint8_t is_complete, completed_rows = 0;
-    int i;
+    int     i;
     for (i = BOARD.height - 1; i >= 0; i--)
     {
         is_complete = 1;
@@ -342,11 +367,12 @@ void row_completion()
         update_points(completed_rows);
 }
 
-void loop_init()
+void
+loop_init()
 {
-    Piece next_piece;
+    Piece        next_piece;
     unsigned int sleep_time = 1000;
-    Vec2d initial_position  = (Vec2d){ 1, BOARD.width / 2 }; // initial position
+    Vec2d initial_position = (Vec2d){ 1, BOARD.width / 2 }; // initial position
     term_hide_cursor();
     random_piece(&CURR_PIECE);
     print_points();
@@ -381,7 +407,8 @@ void loop_init()
 }
 
 
-void move_down(void)
+void
+move_down(void)
 {
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     ++CURR_PIECE.position.i;
@@ -391,7 +418,8 @@ void move_down(void)
     fflush(stdout);
 }
 
-void move_left(void)
+void
+move_left(void)
 {
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     --CURR_PIECE.position.j;
@@ -401,7 +429,8 @@ void move_left(void)
     fflush(stdout);
 }
 
-void move_right(void)
+void
+move_right(void)
 {
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     ++CURR_PIECE.position.j;
@@ -411,7 +440,8 @@ void move_right(void)
     fflush(stdout);
 }
 
-void fast_place(void)
+void
+fast_place(void)
 {
     erase_piece(CURR_PIECE, CURR_PIECE.position);
     do
@@ -423,7 +453,8 @@ void fast_place(void)
     fflush(stdout);
 }
 
-void rotate_ckockwise()
+void
+rotate_ckockwise()
 {
     uint8_t aux;
     erase_piece(CURR_PIECE, CURR_PIECE.position);
@@ -437,7 +468,7 @@ void rotate_ckockwise()
     {
         for (int k = 0; k < 3; k++)
         {
-            aux                            = CURR_PIECE.relative_shape[k].i;
+            aux = CURR_PIECE.relative_shape[k].i;
             CURR_PIECE.relative_shape[k].i = CURR_PIECE.relative_shape[k].j;
             CURR_PIECE.relative_shape[k].j = -aux;
         }
@@ -447,7 +478,8 @@ void rotate_ckockwise()
 }
 
 
-void rotate(void)
+void
+rotate(void)
 {
     uint8_t aux;
     erase_piece(CURR_PIECE, CURR_PIECE.position);
@@ -461,7 +493,7 @@ void rotate(void)
     {
         for (int k = 0; k < 3; k++)
         {
-            aux                            = CURR_PIECE.relative_shape[k].j;
+            aux = CURR_PIECE.relative_shape[k].j;
             CURR_PIECE.relative_shape[k].j = CURR_PIECE.relative_shape[k].i;
             CURR_PIECE.relative_shape[k].i = -aux;
         }

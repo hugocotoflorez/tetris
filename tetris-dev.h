@@ -19,9 +19,9 @@ typedef struct
 
 typedef struct
 {
-    uint8_t width, height;
-    uint8_t* board;
-    Vec2d board_position;
+    uint8_t  width, height;
+    uint8_t *board;
+    Vec2d    board_position;
 } Board;
 
 enum Shape
@@ -43,14 +43,15 @@ struct Relative_shape
 typedef struct
 {
     enum Shape shape;
-    Vec2d position;
-    Vec2d relative_shape[3];
-    uint8_t color;
+    Vec2d      position;
+    Vec2d      relative_shape[3];
+    uint8_t    color;
 } Piece;
 
-typedef void* Keybinds;
+typedef void *Keybinds;
 
 // functions not declared in tetris.h
-void mssleep(int milliseconds);
+void
+mssleep(int milliseconds);
 
 #endif // !__TETRIS_DEV_H
