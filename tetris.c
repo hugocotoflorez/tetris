@@ -31,7 +31,7 @@ term_moveto(Vec2d position)
 void
 term_clean()
 {
-    printf("\e[0m\e[H\e[2J");
+    printf("\e[H\e[2J");
 }
 
 void
@@ -403,6 +403,7 @@ loop_init()
     print_piece(CURR_PIECE, CURR_PIECE.position, 1);
     term_moveto((Vec2d){ BOARD.width + OFFSET + 1, BOARD.height + OFFSET });
     fflush(stdout);
+    term_clean();
     term_show_cursor();
 }
 

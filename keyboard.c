@@ -97,9 +97,9 @@ enableRawMode()
     printf("\e[?25l"); // hide cursor
     tcgetattr(STDIN_FILENO, &origin_termios);
     struct termios raw;
-    raw.c_lflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-    raw.c_lflag &= ~(OPOST);
-    raw.c_lflag |= (CS8);
+    raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+    raw.c_oflag &= ~(OPOST);
+    raw.c_cflag |= (CS8);
     raw.c_lflag &= ~(ECHO | ICANON | ISIG | IEXTEN);
     raw.c_cc[VTIME] = 1;
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
