@@ -402,7 +402,7 @@ loop_init()
     } while (!collide(CURR_PIECE, __next_position(CURR_PIECE.position)));
     print_piece(CURR_PIECE, CURR_PIECE.position, 1);
     fflush(stdout);
-    term_moveto((Vec2d){ BOARD.width * 2 + OFFSET + 1, BOARD.height + OFFSET });
+    term_moveto((Vec2d){ BOARD.width * 2 + OFFSET, BOARD.height + OFFSET });
     term_show_cursor();
 }
 
