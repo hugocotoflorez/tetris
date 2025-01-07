@@ -19,8 +19,10 @@ cd tetris
 make install
 tty-tetris
 ```
-It copies the compiled binary to /usr/local/bin/, dont forget to change
-the keybinds before installation. For uninstall it you can run `sudo make uninstall`.
+Note, it requires `sudo` as it writes
+the compiled binary to /usr/local/bin/. Dont forget to change
+the keybinds before installation.
+For uninstall it you can run `sudo make uninstall`.
 
 #### Manual installation
 
@@ -33,8 +35,8 @@ make all
 
 - `w` : Rotate
 - `a` : Move left
-- `s` : Move right
-- `d` : Move down
+- `s` : Move down
+- `d` : Move right
 - `space` : Move straight down
 
 
